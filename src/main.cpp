@@ -3,11 +3,12 @@
 #include <cassert>
 #include <cstdio>
 
-#include "renderer.h"
-#include "shader_loader.h"
+#include "renderer.hpp"
+#include "shader.hpp"
 
-#include "vertex_buffer.h"
-#include "index_buffer.h"
+#include "vertex_buffer.hpp"
+#include "index_buffer.hpp"
+#include "vertex_array.hpp"
 
 int main(void) {
     GLFWwindow* window;
@@ -31,11 +32,10 @@ int main(void) {
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    /*glfwSwapInterval(0);*/
+    glfwSwapInterval(0);
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
-        /* Problem: glewInit failed, something is seriously wrong. */
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
     fprintf(stdout, "GLEW %s\nOPENGL %s\n", glewGetString(GLEW_VERSION), glGetString(GL_VERSION));
@@ -52,26 +52,24 @@ int main(void) {
         2, 3, 0
     };
 
-    unsigned int vao;
-    gl_call(glGenVertexArrays(1, &vao));
-    gl_call(glBindVertexArray(vao));
-
+    VertexArray va;
     VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
-    gl_call(glEnableVertexAttribArray(0));
-    gl_call(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));
+    VertexBufferLayout layout;
+    layout.push(GL_FLOAT, 2);
+    va.add_buffer(vb, layout);
 
     IndexBuffer ib(indices, 6);
-    ib.bind();
 
-    ShaderProgramSource source = parse_shader("assets/basic.glsl");
+    Shader shader("assets/basic.glsl");
+    shader.bind();
 
-    unsigned int shader = create_shader(source.vertex_source, source.fragment_source);
-    gl_call(glUseProgram(shader));
+    shader.set_uniform_v4("u_color", 0.2f, 0.3f, 0.8f, 1.0f);
 
-    gl_call(int location = glGetUniformLocation(shader, "u_color"));
-    assert(location != -1);
-    gl_call(glUniform4f(location, 0.2f, 0.3f, 0.8f, 1.0f));
+    va.unbind();
+    vb.unbind();
+    ib.unbind();
+    shader.unbind();
 
     float r = 0.0f;
     float increment = 0.05f;
@@ -80,9 +78,13 @@ int main(void) {
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        gl_call(glClear(GL_COLOR_BUFFER_BIT));
 
-        gl_call(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
+        va.bind();
+        ib.bind();
+
+        shader.bind();
+        shader.set_uniform_v4("u_color", r, 0.3f, 0.8f, 1.0f);
         gl_call(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr));
 
         float current_frame = glfwGetTime();
@@ -103,8 +105,6 @@ int main(void) {
         /* Poll for and process events */
         glfwPollEvents();
     }
-
-    gl_call(glDeleteProgram(shader));
 
     glfwTerminate();
     return 0;

@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "renderer.hpp"
 
 void gl_clear_error() {
     while (glGetError() != GL_NO_ERROR);

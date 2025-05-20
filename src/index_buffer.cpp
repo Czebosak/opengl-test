@@ -1,5 +1,5 @@
-#include "index_buffer.h"
-#include "renderer.h"
+#include "index_buffer.hpp"
+#include "renderer.hpp"
 
 IndexBuffer::IndexBuffer(const unsigned char* data, unsigned int count) : m_count(count) {
     gl_call(glGenBuffers(1, &m_renderer_id));

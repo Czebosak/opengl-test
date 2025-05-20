@@ -12,8 +12,8 @@ build/obj: build
 
 DEBUG=
 OBJECT_FILES=build/obj/index_buffer
-build/main: build build/obj/main.o build/obj/renderer.o build/obj/vertex_buffer.o build/obj/index_buffer.o build/obj/shader_loader.o
-	g++ build/obj/main.o build/obj/renderer.o build/obj/vertex_buffer.o build/obj/index_buffer.o build/obj/shader_loader.o -o build/main $(LIBRARIES) $(DEBUG)
+build/main: build build/obj/main.o build/obj/renderer.o build/obj/vertex_buffer.o build/obj/index_buffer.o build/obj/shader.o build/obj/vertex_array.o
+	g++ build/obj/main.o build/obj/renderer.o build/obj/vertex_buffer.o build/obj/index_buffer.o build/obj/shader.o build/obj/vertex_array.o -o build/main $(LIBRARIES) $(DEBUG)
 
 build/obj/main.o: build/obj
 	g++ -c src/main.cpp -o build/obj/main.o $(DEBUG)
@@ -27,8 +27,11 @@ build/obj/vertex_buffer.o: build/obj
 build/obj/index_buffer.o: build/obj
 	g++ -c src/index_buffer.cpp -o build/obj/index_buffer.o $(DEBUG)
 
-build/obj/shader_loader.o: build/obj
-	g++ -c src/shader_loader.cpp -o build/obj/shader_loader.o $(DEBUG)
+build/obj/shader.o: build/obj
+	g++ -c src/shader.cpp -o build/obj/shader.o $(DEBUG)
+
+build/obj/vertex_array.o: build/obj
+	g++ -c src/vertex_array.cpp -o build/obj/vertex_array.o -std=c++23
 
 clean:
 	rm -rf build
