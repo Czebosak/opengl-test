@@ -61,7 +61,7 @@ int main(void) {
 
     IndexBuffer ib(indices, 6);
 
-    Shader shader("assets/basic.glsl");
+    Shader shader(ASSETS_PATH"/basic.glsl");
     shader.bind();
 
     shader.set_uniform_v4("u_color", 0.2f, 0.3f, 0.8f, 1.0f);

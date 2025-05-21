@@ -1,5 +1,0 @@
-make $1
-printf "Running:\n\n"
-mv build/main main
-mangohud --dlsym ./main
-mv main build/main
