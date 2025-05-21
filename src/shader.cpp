@@ -95,12 +95,15 @@ void Shader::set_uniform_v4(const std::string& name, float x, float y, float z, 
 int Shader::get_uniform_location(const char* name) {
     int location;
 
-    auto it = uniform_location_cache.find(std::string(name));
+    std::string id = std::string(name);
+    auto it = uniform_location_cache.find(id);
     if (it == uniform_location_cache.end()) {
         gl_call(location = glGetUniformLocation(renderer_id, name));
         if (location == -1) {
             std::cout << "Warning: uniform \"" << name << "\" doesn't exist!\n";
         }
+        
+        uniform_location_cache.emplace(std::move(id), location);
     } else {
         location = it->second;
     }
