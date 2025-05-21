@@ -1,7 +1,8 @@
 #pragma once
 
-#include "vertex_buffer.hpp"
-#include "vertex_buffer_layout.hpp"
+#include <vertex_buffer.hpp>
+
+class VertexBufferLayout;
 
 class VertexArray {
 private:

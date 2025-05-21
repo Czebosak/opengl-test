@@ -3,12 +3,13 @@
 #include <cassert>
 #include <cstdio>
 
-#include "renderer.hpp"
-#include "shader.hpp"
+#include <renderer.hpp>
+#include <shader.hpp>
 
-#include "vertex_buffer.hpp"
-#include "index_buffer.hpp"
-#include "vertex_array.hpp"
+#include <vertex_buffer_layout.hpp>
+#include <vertex_buffer.hpp>
+#include <index_buffer.hpp>
+#include <vertex_array.hpp>
 
 int main(void) {
     GLFWwindow* window;
@@ -47,7 +48,7 @@ int main(void) {
         -0.5f,  0.5f
     };
 
-    unsigned char indices[] = {
+    unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0
     };
@@ -71,6 +72,8 @@ int main(void) {
     ib.unbind();
     shader.unbind();
 
+    Renderer renderer;
+
     float r = 0.0f;
     float increment = 0.05f;
     float delta_time = 0.0f;
@@ -78,14 +81,11 @@ int main(void) {
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Render here */
-        gl_call(glClear(GL_COLOR_BUFFER_BIT));
-
-        va.bind();
-        ib.bind();
+        renderer.clear();
 
         shader.bind();
         shader.set_uniform_v4("u_color", r, 0.3f, 0.8f, 1.0f);
-        gl_call(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr));
+        renderer.draw(va, ib, shader);
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
