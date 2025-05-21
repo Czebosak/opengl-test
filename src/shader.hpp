@@ -1,11 +1,14 @@
 #pragma once
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 class Shader {
 private:
     unsigned int renderer_id;
     const std::string filepath;
+
+    std::unordered_map<std::string, int> uniform_location_cache;
     
     struct ProgramSource {
         std::string vertex_source;

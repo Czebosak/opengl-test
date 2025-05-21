@@ -93,9 +93,17 @@ void Shader::set_uniform_v4(const std::string& name, float x, float y, float z, 
 }
 
 int Shader::get_uniform_location(const char* name) {
-    gl_call(int location = glGetUniformLocation(renderer_id, name));
-    if (location == -1) {
-        std::cout << "Warning: uniform \"" << name << "\" doesn't exist!\n";
+    int location;
+
+    auto it = uniform_location_cache.find(std::string(name));
+    if (it == uniform_location_cache.end()) {
+        gl_call(location = glGetUniformLocation(renderer_id, name));
+        if (location == -1) {
+            std::cout << "Warning: uniform \"" << name << "\" doesn't exist!\n";
+        }
+    } else {
+        location = it->second;
     }
+
     return location;
 }
