@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cassert>
 
 typedef int8_t i8;
 typedef int16_t i16;

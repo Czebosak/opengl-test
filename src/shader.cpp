@@ -6,8 +6,8 @@
 
 #include "renderer.hpp"
 
-Shader::Shader(const std::string_view filepath) : filepath(filepath) {
-    Shader::ProgramSource source = parse("assets/basic.glsl");
+Shader::Shader(const std::string& filepath) : filepath(filepath) {
+    Shader::ProgramSource source = parse(filepath);
 
     renderer_id = create(source);
 }
@@ -86,6 +86,14 @@ void Shader::bind() const {
 
 void Shader::unbind() const {
     gl_call(glUseProgram(0));
+}
+
+void Shader::set_uniform_1i(const std::string& name, int value) {
+    gl_call(glUniform1i(get_uniform_location(name.c_str()), value));
+}
+
+void Shader::set_uniform_1f(const std::string& name, float value) {
+    gl_call(glUniform1f(get_uniform_location(name.c_str()), value));
 }
 
 void Shader::set_uniform_v4(const std::string& name, float x, float y, float z, float w) {

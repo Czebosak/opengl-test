@@ -5,6 +5,7 @@
 
 #include <renderer.hpp>
 #include <shader.hpp>
+#include <texture.hpp>
 
 #include <vertex_buffer_layout.hpp>
 #include <vertex_buffer.hpp>
@@ -42,10 +43,10 @@ int main(void) {
     fprintf(stdout, "GLEW %s\nOPENGL %s\n", glewGetString(GLEW_VERSION), glGetString(GL_VERSION));
 
     float positions[] = {
-        -0.5f, -0.5f,
-         0.5f, -0.5f,
-         0.5f,  0.5f,
-        -0.5f,  0.5f
+        -0.5f, -0.5f, 0.0f, 0.0f,
+         0.5f, -0.5f, 1.0f, 0.0f,
+         0.5f,  0.5f, 1.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f, 1.0f
     };
 
     unsigned int indices[] = {
@@ -54,18 +55,23 @@ int main(void) {
     };
 
     VertexArray va;
-    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBuffer vb(positions, sizeof(positions));
 
     VertexBufferLayout layout;
+    layout.push(GL_FLOAT, 2);
     layout.push(GL_FLOAT, 2);
     va.add_buffer(vb, layout);
 
     IndexBuffer ib(indices, 6);
 
-    Shader shader(ASSETS_PATH"/basic.glsl");
+    Shader shader(ASSETS_PATH"/shaders/basic.glsl");
     shader.bind();
 
     shader.set_uniform_v4("u_color", 0.2f, 0.3f, 0.8f, 1.0f);
+
+    Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
+    texture.bind();
+    shader.set_uniform_1i("u_texture", 0);
 
     va.unbind();
     vb.unbind();

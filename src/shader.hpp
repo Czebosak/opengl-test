@@ -21,12 +21,14 @@ private:
 
     int get_uniform_location(const char* name);
 public:
-    Shader(const std::string_view filepath);
+    Shader(const std::string& filepath);
     ~Shader();
 
     void bind() const;
     void unbind() const;
 
     // set uniforms
+    void set_uniform_1i(const std::string& name, int value);
+    void set_uniform_1f(const std::string& name, float value);
     void set_uniform_v4(const std::string& name, float x, float y, float z, float w);
 };
