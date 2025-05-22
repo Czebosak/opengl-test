@@ -6,8 +6,10 @@ layout(location = 1) in vec2 VERTEX_UV;
 
 out vec2 UV;
 
+uniform mat4 u_mpv;
+
 void main() {
-    gl_Position = position;
+    gl_Position = u_mpv * position;
     UV = VERTEX_UV;
 };
 

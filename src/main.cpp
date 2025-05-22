@@ -12,6 +12,9 @@
 #include <index_buffer.hpp>
 #include <vertex_array.hpp>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 int main(void) {
     GLFWwindow* window;
 
@@ -67,10 +70,13 @@ int main(void) {
 
     IndexBuffer ib(indices, 6);
 
+    glm::mat4 projection_matrix = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+
     Shader shader(ASSETS_PATH"/shaders/basic.glsl");
     shader.bind();
 
     shader.set_uniform_v4("u_color", 0.2f, 0.3f, 0.8f, 1.0f);
+    shader.set_uniform_mat4f("u_mpv", projection_matrix);
 
     Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
     texture.bind();

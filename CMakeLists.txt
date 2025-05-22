@@ -27,6 +27,7 @@ endif()
 
 target_include_directories(OpenGLTest PRIVATE "src")
 target_include_directories(OpenGLTest PRIVATE "external/std_image")
+target_include_directories(OpenGLTest PRIVATE "external/glm")
 
 target_link_libraries(OpenGLTest PRIVATE OpenGL::GL GLEW::GLEW glfw)
 
