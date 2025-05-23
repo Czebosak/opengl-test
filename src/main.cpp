@@ -19,6 +19,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+float CAMERA_SPEED = 1000.0f;
+
 int main(void) {
     GLFWwindow* window;
 
@@ -123,9 +125,28 @@ int main(void) {
         float v[3];
         ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
         ImGui::SliderFloat3("Translation B", &translation_b.x, -640.0f * 2.0f, 640.0f * 2.0f);
-        ImGui::SliderFloat3("Camera Translation", &camera_translation.x, -640.0f * 2.0f, 640.0f * 2.0f);
 
         ImGui::End();
+
+        {
+            glm::vec3 input(0.0f);
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                input.y -= 1.0f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                input.y += 1.0f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                input.x += 1.0f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                input.x -= 1.0f;
+            }
+
+            if (glm::length(input) != 0.0f) {
+                camera_translation += glm::normalize(input) * CAMERA_SPEED * delta_time;
+            }
+        }
         
         glm::mat4 view = glm::translate(glm::mat4(1.0f), camera_translation);
 
