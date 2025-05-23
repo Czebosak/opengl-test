@@ -58,10 +58,10 @@ int main(void) {
     ImGui_ImplOpenGL3_Init();
 
     float positions[] = {
-        -0.5f, -0.5f, 0.0f, 0.0f,
-         0.5f, -0.5f, 1.0f, 0.0f,
-         0.5f,  0.5f, 1.0f, 1.0f,
-        -0.5f,  0.5f, 0.0f, 1.0f
+        0.0f,   0.0f,   0.0f, 0.0f,
+        907.5f, 0.0f,   1.0f, 0.0f,
+        907.5f, 472.0f, 1.0f, 1.0f,
+        0.0f,   472.0f, 0.0f, 1.0f
     };
 
     unsigned int indices[] = {
@@ -82,13 +82,15 @@ int main(void) {
 
     IndexBuffer ib(indices, 6);
 
-    glm::mat4 projection_matrix = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+    int window_width, window_height;
+    glfwGetWindowSize(window, &window_width, &window_height);
+    
+    glm::mat4 projection_matrix = glm::ortho(0.0f, float(window_width), 0.0f, float(window_height), -1.0f, 1.0f);
 
     Shader shader(ASSETS_PATH"/shaders/basic.glsl");
     shader.bind();
 
-    shader.set_uniform_v4("u_color", 0.2f, 0.3f, 0.8f, 1.0f);
-    shader.set_uniform_mat4f("u_mpv", projection_matrix);
+    shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
 
     Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
     texture.bind();
@@ -101,8 +103,10 @@ int main(void) {
 
     Renderer renderer;
 
-    float r = 0.0f;
-    float increment = 0.05f;
+    glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
+    glm::vec3 translation_b = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
+
     float delta_time = 0.0f;
     float last_frame = 0.0f;
     /* Loop until the user closes the window */
@@ -114,27 +118,38 @@ int main(void) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Hello, world!");
+        ImGui::Begin("Very epic move window!");
 
-        ImGui::Text("This is some useful text."); 
+        float v[3];
+        ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
+        ImGui::SliderFloat3("Translation B", &translation_b.x, -640.0f * 2.0f, 640.0f * 2.0f);
+        ImGui::SliderFloat3("Camera Translation", &camera_translation.x, -640.0f * 2.0f, 640.0f * 2.0f);
+
+        ImGui::End();
         
-        ImGui::End() ;
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), camera_translation);
 
         shader.bind();
-        shader.set_uniform_v4("u_color", r, 0.3f, 0.8f, 1.0f);
-        renderer.draw(va, ib, shader);
+
+        {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_a);
+            glm::mat4 mvp = projection_matrix * view * model;
+
+            shader.set_uniform_mat4f("u_mpv", mvp);
+            renderer.draw(va, ib, shader);
+        }
+
+        {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_b);
+            glm::mat4 mvp = projection_matrix * view * model;
+
+            shader.set_uniform_mat4f("u_mpv", mvp);
+            renderer.draw(va, ib, shader);
+        }
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
-
-        if (r > 1.0f) {
-            increment = -5.0f * delta_time;
-        } else if (r < 0.0f) {
-            increment = 5.0f * delta_time;
-        }
-
-        r += increment;
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
