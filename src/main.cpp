@@ -3,6 +3,10 @@
 #include <cassert>
 #include <cstdio>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <renderer.hpp>
 #include <shader.hpp>
 #include <texture.hpp>
@@ -44,6 +48,14 @@ int main(void) {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
     fprintf(stdout, "GLEW %s\nOPENGL %s\n", glewGetString(GLEW_VERSION), glGetString(GL_VERSION));
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
 
     float positions[] = {
         -0.5f, -0.5f, 0.0f, 0.0f,
@@ -98,6 +110,16 @@ int main(void) {
         /* Render here */
         renderer.clear();
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Hello, world!");
+
+        ImGui::Text("This is some useful text."); 
+        
+        ImGui::End() ;
+
         shader.bind();
         shader.set_uniform_v4("u_color", r, 0.3f, 0.8f, 1.0f);
         renderer.draw(va, ib, shader);
@@ -114,12 +136,19 @@ int main(void) {
 
         r += increment;
         
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;

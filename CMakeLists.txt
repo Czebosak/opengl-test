@@ -12,8 +12,10 @@ find_package(GLEW REQUIRED)
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 file(GLOB_RECURSE STB_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/std_image/stb_image.cpp")
+file(GLOB_RECURSE IMGUI CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/*.cpp")
 
 list(APPEND MY_SOURCES "${STB_SOURCES}")
+list(APPEND MY_SOURCES "${IMGUI}")
 
 add_executable(OpenGLTest "${MY_SOURCES}")
 
@@ -28,6 +30,7 @@ endif()
 target_include_directories(OpenGLTest PRIVATE "src")
 target_include_directories(OpenGLTest PRIVATE "external/std_image")
 target_include_directories(OpenGLTest PRIVATE "external/glm")
+target_include_directories(OpenGLTest PRIVATE "external/imgui")
 
 target_link_libraries(OpenGLTest PRIVATE OpenGL::GL GLEW::GLEW glfw)
 
