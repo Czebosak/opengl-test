@@ -7,7 +7,7 @@
 
 class Shader {
 private:
-    unsigned int renderer_id;
+    unsigned int id;
     const std::string filepath;
 
     std::unordered_map<std::string, int> uniform_location_cache;

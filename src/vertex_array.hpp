@@ -6,7 +6,7 @@ class VertexBufferLayout;
 
 class VertexArray {
 private:
-    unsigned int renderer_id;
+    unsigned int id;
 public:
     VertexArray();
     ~VertexArray();

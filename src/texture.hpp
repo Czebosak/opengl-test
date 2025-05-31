@@ -6,7 +6,7 @@
 
 class Texture {
 private:
-    unsigned int renderer_id;
+    unsigned int id;
     std::string file_path;
     int width, height, bpp;
 public:

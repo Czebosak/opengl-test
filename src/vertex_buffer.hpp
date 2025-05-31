@@ -2,7 +2,7 @@
 
 class VertexBuffer {
 private:
-    unsigned int m_renderer_id;
+    unsigned int id;
 public:
     VertexBuffer();
     VertexBuffer(const void* data, unsigned int size);
@@ -15,14 +15,14 @@ public:
     VertexBuffer& operator=(const VertexBuffer&) = delete;
 
     VertexBuffer(VertexBuffer&& other) {
-        m_renderer_id = other.m_renderer_id;
-        other.m_renderer_id = 0;
+        id = other.id;
+        other.id = 0;
     }
 
     VertexBuffer& operator=(VertexBuffer&& other) {
         if (this != &other) {
-            m_renderer_id = other.m_renderer_id;
-            other.m_renderer_id = 0;
+            id = other.id;
+            other.id = 0;
         }
         return *this;
     }

@@ -9,11 +9,11 @@
 Shader::Shader(const std::string& filepath) : filepath(filepath) {
     Shader::ProgramSource source = parse(filepath);
 
-    renderer_id = create(source);
+    id = create(source);
 }
 
 Shader::~Shader() {
-    gl_call(glDeleteProgram(renderer_id));
+    gl_call(glDeleteProgram(id));
 }
 
 Shader::ProgramSource Shader::parse(const std::string& filename) {
@@ -81,7 +81,7 @@ unsigned int Shader::create(Shader::ProgramSource& source) {
 }
 
 void Shader::bind() const {
-    gl_call(glUseProgram(renderer_id));
+    gl_call(glUseProgram(id));
 }
 
 void Shader::unbind() const {
@@ -107,15 +107,15 @@ void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& matrix)
 int Shader::get_uniform_location(const char* name) {
     int location;
 
-    std::string id = std::string(name);
-    auto it = uniform_location_cache.find(id);
+    std::string string_name = std::string(name);
+    auto it = uniform_location_cache.find(string_name);
     if (it == uniform_location_cache.end()) {
-        gl_call(location = glGetUniformLocation(renderer_id, name));
+        gl_call(location = glGetUniformLocation(id, name));
         if (location == -1) {
             std::cout << "Warning: uniform \"" << name << "\" doesn't exist!\n";
         }
         
-        uniform_location_cache.emplace(std::move(id), location);
+        uniform_location_cache.emplace(std::move(string_name), location);
     } else {
         location = it->second;
     }
