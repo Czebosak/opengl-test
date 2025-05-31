@@ -38,3 +38,19 @@ void Mesh::unbind() const {
     index_buffer.unbind();
     //texture.unbind();
 }
+
+Mesh Mesh::rectangle(const glm::vec2 size, Texture texture, bool centered) {
+    std::vector<Vertex> vertices = {
+        { { 0.0f,   0.0f   }, { 0.0f, 0.0f } },
+        { { size.x, 0.0f   }, { 1.0f, 0.0f } },
+        { { size.x, size.y }, { 1.0f, 1.0f } },
+        { { 0.0f,   size.y }, { 0.0f, 1.0f } }
+    };
+
+    std::vector<u32> indices = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    return Mesh(std::move(vertices), std::move(indices), texture);
+}

@@ -63,50 +63,25 @@ int main(void) {
     gl_call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     gl_call(glEnable(GL_BLEND));
 
-    std::vector<Vertex> vertices = {
-        { { 0.0f,   0.0f   }, { 0.0f, 0.0f } },
-        { { 907.5f, 0.0f   }, { 1.0f, 0.0f } },
-        { { 907.5f, 472.0f }, { 1.0f, 1.0f } },
-        { { 0.0f,   472.0f }, { 0.0f, 1.0f } }
-    };
-
-    std::vector<u32> indices = {
-        0, 1, 2,
-        0, 2, 3
-    };
-
-    /* VertexArray va;
-    VertexBuffer vb(&vertices[0], sizeof(Vertex) * vertices.size());
-
-    VertexBufferLayout layout;
-    layout.push(GL_FLOAT, 2);
-    layout.push(GL_FLOAT, 2);
-    va.add_buffer(vb, layout);
-
-    IndexBuffer ib(&indices[0], 6); */
-
-    Mesh mesh(std::move(vertices), std::move(indices), Texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST));
+    Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f), Texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST));
 
     int window_width, window_height;
     glfwGetWindowSize(window, &window_width, &window_height);
     
     glm::mat4 projection_matrix = glm::ortho(0.0f, float(window_width), 0.0f, float(window_height), -1.0f, 1.0f);
 
-    Shader shader(ASSETS_PATH"/shaders/basic.glsl");
-
+    Shader shader(ASSETS_PATH"/shaders/texture.glsl");
     shader.bind();
-
     shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-    /* va.unbind();
-    vb.unbind();
-    ib.unbind(); */
+    mesh.get_texture().bind();
+    shader.set_uniform_1i("u_texture", 0);
+    
     shader.unbind();
 
     Renderer renderer;
 
     glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
-    glm::vec3 translation_b = { 0.0f, 0.0, 0.0f };
     glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
 
     float delta_time = 0.0f;
@@ -123,9 +98,7 @@ int main(void) {
         {
             ImGui::Begin("Very epic move window!");
 
-            float v[3];
             ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
-            ImGui::SliderFloat3("Translation B", &translation_b.x, -640.0f * 2.0f, 640.0f * 2.0f);
 
             ImGui::End();
         }
@@ -159,29 +132,10 @@ int main(void) {
             glm::mat4 mvp = projection_matrix * view * model;
 
             shader.set_uniform_mat4f("u_mpv", mvp);
-            //renderer.draw(va, ib, shader);
             mesh.bind();
 
-            gl_call(glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, nullptr));
+            gl_call(glDrawElements(GL_TRIANGLES, mesh.get_index_buffer().get_count(), GL_UNSIGNED_INT, nullptr));
         }
-
-        /* {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_a);
-            glm::mat4 mvp = projection_matrix * view * model;
-
-            shader.set_uniform_mat4f("u_mpv", mvp);
-            renderer.draw(va, ib, shader);
-        }
-
-        {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_b);
-            model = glm::rotate(model, 45.0f, glm::vec3(0.0, 0.0, 1.0));
-
-            glm::mat4 mvp = projection_matrix * view * model;
-
-            shader.set_uniform_mat4f("u_mpv", mvp);
-            renderer.draw(va, ib, shader);
-        } */
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
