@@ -104,18 +104,17 @@ void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& matrix)
     gl_call(glUniformMatrix4fv(get_uniform_location(name.c_str()), 1, GL_FALSE, &matrix[0][0]));
 }
 
-int Shader::get_uniform_location(const char* name) {
+int Shader::get_uniform_location(const std::string& name) {
     int location;
 
-    std::string string_name = std::string(name);
-    auto it = uniform_location_cache.find(string_name);
+    auto it = uniform_location_cache.find(name);
     if (it == uniform_location_cache.end()) {
-        gl_call(location = glGetUniformLocation(id, name));
+        gl_call(location = glGetUniformLocation(id, name.c_str()));
         if (location == -1) {
             std::cout << "Warning: uniform \"" << name << "\" doesn't exist!\n";
         }
         
-        uniform_location_cache.emplace(std::move(string_name), location);
+        uniform_location_cache.emplace(name, location);
     } else {
         location = it->second;
     }

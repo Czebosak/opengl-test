@@ -21,7 +21,7 @@ private:
     static unsigned int create(Shader::ProgramSource& source);
     static unsigned int compile(unsigned int type, const std::string& source);
 
-    int get_uniform_location(const char* name);
+    int get_uniform_location(const std::string& name);
 public:
     Shader(const std::string& filepath);
     ~Shader();
