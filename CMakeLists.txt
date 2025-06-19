@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION "3.19.2")
 
 option(PRODUCTION_BUILD "Build in production mode" OFF)
 
-project(OpenGLTest)
+project(Osushi)
 set(CMAKE_CXX_STANDARD 23)
 
 find_package(OpenGL REQUIRED)
@@ -17,25 +17,29 @@ file(GLOB_RECURSE IMGUI CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/
 list(APPEND MY_SOURCES "${STB_SOURCES}")
 list(APPEND MY_SOURCES "${IMGUI}")
 
-add_executable(OpenGLTest "${MY_SOURCES}")
+add_executable(Osushi "${MY_SOURCES}")
+
+add_subdirectory(Osushi "external/elzip")
+
+target_link_libraries(Osushi private elzip)
 
 if(PRODUCTION_BUILD)
-target_compile_definitions(OpenGLTest PRIVATE ASSETS_PATH="assets/")
-target_compile_definitions(OpenGLTest PRIVATE PROJECT_PATH="./")
+target_compile_definitions(Osushi PRIVATE ASSETS_PATH="assets/")
+target_compile_definitions(Osushi PRIVATE PROJECT_PATH="./")
 else()
-target_compile_definitions(OpenGLTest PRIVATE PROJECT_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_definitions(OpenGLTest PRIVATE ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+target_compile_definitions(Osushi PRIVATE PROJECT_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(Osushi PRIVATE ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 endif()
 
-target_include_directories(OpenGLTest PRIVATE "src")
-target_include_directories(OpenGLTest PRIVATE "external/std_image")
-target_include_directories(OpenGLTest PRIVATE "external/glm")
-target_include_directories(OpenGLTest PRIVATE "external/imgui")
+target_include_directories(Osushi PRIVATE "src")
+target_include_directories(Osushi PRIVATE "external/std_image")
+target_include_directories(Osushi PRIVATE "external/glm")
+target_include_directories(Osushi PRIVATE "external/imgui")
 
-target_link_libraries(OpenGLTest PRIVATE OpenGL::GL GLEW::GLEW glfw)
+target_link_libraries(Osushi PRIVATE OpenGL::GL GLEW::GLEW glfw)
 
 if (UNIX)
-    target_link_libraries(OpenGLTest PRIVATE m pthread dl rt X11)
+    target_link_libraries(Osushi PRIVATE m pthread dl rt X11)
 endif()
 
 if(PRODUCTION_BUILD)
