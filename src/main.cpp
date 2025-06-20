@@ -17,10 +17,17 @@
 #include <index_buffer.hpp>
 #include <vertex_array.hpp>
 
+#include <elzip.hpp>
+#include <osu_parser.hpp>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 float CAMERA_SPEED = 1000.0f;
+
+void song_frame(float delta) {
+
+}
 
 int main(void) {
     GLFWwindow* window;
@@ -83,6 +90,22 @@ int main(void) {
 
     glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
     glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
+
+    UndecodedBeatmap beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
+    for (auto& kv : beatmap.data) {
+        std::cout << "Section: " << kv.first << "\n";
+        for (auto& kv : kv.second) {
+            std::cout << kv.first << ": " << kv.second << "\n";
+        }
+    }
+    std::cout << "\nTimestamps\n";
+    for (std::string& timestamp : beatmap.timing_points) {
+        std::cout << timestamp << "\n";
+    }
+    std::cout << "\nHitObjects\n";
+    for (std::string& timestamp : beatmap.hit_objects) {
+        std::cout << timestamp << "\n";
+    }
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;

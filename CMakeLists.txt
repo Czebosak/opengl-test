@@ -19,15 +19,16 @@ list(APPEND MY_SOURCES "${IMGUI}")
 
 add_executable(Osushi "${MY_SOURCES}")
 
-add_subdirectory(Osushi "external/elzip")
+add_subdirectory("external/elzip")
 
-target_link_libraries(Osushi private elzip)
+target_link_libraries(Osushi PRIVATE elzip)
 
 if(PRODUCTION_BUILD)
 target_compile_definitions(Osushi PRIVATE ASSETS_PATH="assets/")
 target_compile_definitions(Osushi PRIVATE PROJECT_PATH="./")
 else()
 target_compile_definitions(Osushi PRIVATE PROJECT_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(Osushi PRIVATE DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data")
 target_compile_definitions(Osushi PRIVATE ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 endif()
 
