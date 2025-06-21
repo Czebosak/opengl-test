@@ -39,13 +39,11 @@ void song_frame(float delta) {
 
 }
 
-int main(void) {
-    GLFWwindow* window;
-
+GLFWwindow* setup_window_and_context(u32 width, u32 height, const char* title) {
     /* Initialize the library */
     if (!glfwInit()) {
         fprintf(stderr, "glfw failed to initialize ヾ(ﾟдﾟ)ﾉ゛");
-        return -1;
+        return nullptr;
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -53,10 +51,11 @@ int main(void) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640*2, 480*2, "こんにちは世界x3", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window) {
+        fprintf(stderr, "Window failed to initialize ヾ(ﾟдﾟ)ﾉ゛");
         glfwTerminate();
-        return -1;
+        return nullptr;
     }
 
     /* Make the window's context current */
@@ -69,6 +68,7 @@ int main(void) {
     }
     fprintf(stdout, "GLEW %s\nOPENGL %s\n", glewGetString(GLEW_VERSION), glGetString(GL_VERSION));
 
+    // Setup ImGui
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -77,8 +77,18 @@ int main(void) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
     
+    // Setup blending
     gl_call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     gl_call(glEnable(GL_BLEND));
+
+    return window;
+}
+
+int main(void) {
+    GLFWwindow* window = setup_window_and_context(640*2, 480*2, "こんにちは世界x3");
+    if (!window) {
+        return -1;
+    }
 
     glfwSetDropCallback(window, drop_callback);
 
