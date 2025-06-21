@@ -25,6 +25,16 @@
 
 float CAMERA_SPEED = 1000.0f;
 
+void unzip_song(const char* path) {
+    elz::extractZip(path, DATA_PATH"/songs");
+}
+
+void drop_callback(GLFWwindow* window, int count, const char** paths) {
+    for (int i = 0;  i < count;  i++) {
+        unzip_song(paths[i]);
+    }
+}
+
 void song_frame(float delta) {
 
 }
@@ -70,6 +80,8 @@ int main(void) {
     gl_call(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     gl_call(glEnable(GL_BLEND));
 
+    glfwSetDropCallback(window, drop_callback);
+
     Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f), Texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST));
 
     int window_width, window_height;
@@ -91,7 +103,7 @@ int main(void) {
     glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
     glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
 
-    UndecodedBeatmap beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
+    /* UndecodedBeatmap beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
     for (auto& kv : beatmap.data) {
         std::cout << "Section: " << kv.first << "\n";
         for (auto& kv : kv.second) {
@@ -105,7 +117,7 @@ int main(void) {
     std::cout << "\nHitObjects\n";
     for (std::string& timestamp : beatmap.hit_objects) {
         std::cout << timestamp << "\n";
-    }
+    } */
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;
