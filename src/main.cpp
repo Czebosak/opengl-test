@@ -18,6 +18,8 @@
 #include <vertex_array.hpp>
 
 #include <elzip.hpp>
+#include <miniaudio.h>
+
 #include <osu_parser.hpp>
 
 #include <glm/glm.hpp>
@@ -90,6 +92,15 @@ int main(void) {
         return -1;
     }
 
+    ma_engine audio_engine;
+
+    {
+        ma_result result = ma_engine_init(NULL, &audio_engine);
+        if (result != MA_SUCCESS) {
+            return result;  // Failed to initialize the engine.
+        }
+    }
+
     glfwSetDropCallback(window, drop_callback);
 
     Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f), Texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST));
@@ -128,6 +139,22 @@ int main(void) {
     for (std::string& timestamp : beatmap.hit_objects) {
         std::cout << timestamp << "\n";
     } */
+
+    ma_sound sound;
+
+    
+    printf(DATA_PATH"/audio.mp3\n");
+    ma_result result = ma_sound_init_from_file(&audio_engine, DATA_PATH"/songs/audio.mp3", 0, NULL, NULL, &sound);
+    printf("WEEE ARE HEEERE\n");
+    if (result != MA_SUCCESS) {
+        printf("WEEE ARE HEEERE4\n");
+        return result;
+        printf("WEEE ARE HEEERE5\n");
+    }
+
+    printf("WEEE ARE HEEERE3\n");
+    ma_sound_start(&sound);
+    printf("WEEE ARE HEEERE2\n");
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;

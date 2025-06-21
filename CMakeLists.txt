@@ -13,9 +13,11 @@ file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 file(GLOB_RECURSE STB_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/std_image/stb_image.cpp")
 file(GLOB_RECURSE IMGUI CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/*.cpp")
+file(GLOB_RECURSE MINIAUDIO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/external/miniaudio/miniaudio.c")
 
 list(APPEND MY_SOURCES "${STB_SOURCES}")
 list(APPEND MY_SOURCES "${IMGUI}")
+list(APPEND MY_SOURCES "${MINIAUDIO}")
 
 add_executable(Osushi "${MY_SOURCES}")
 
@@ -36,6 +38,7 @@ target_include_directories(Osushi PRIVATE "src")
 target_include_directories(Osushi PRIVATE "external/std_image")
 target_include_directories(Osushi PRIVATE "external/glm")
 target_include_directories(Osushi PRIVATE "external/imgui")
+target_include_directories(Osushi PRIVATE "external/miniaudio")
 
 target_link_libraries(Osushi PRIVATE OpenGL::GL GLEW::GLEW glfw)
 
