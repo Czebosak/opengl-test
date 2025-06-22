@@ -223,6 +223,10 @@ int main(void) {
         glfwPollEvents();
     }
 
+    ma_sound_uninit(&sound);
+
+    ma_engine_uninit(&audio_engine);
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
