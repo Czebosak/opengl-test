@@ -8,7 +8,7 @@
 class Shader {
 private:
     unsigned int id;
-    const std::string filepath;
+    std::string filepath;
 
     std::unordered_map<std::string, int> uniform_location_cache;
     
@@ -28,6 +28,26 @@ public:
 
     void bind() const;
     void unbind() const;
+
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+
+    Shader(Shader&& other) {
+        id = other.id;
+        other.id = 0;
+        filepath = std::move(other.filepath);
+        uniform_location_cache = std::move(other.uniform_location_cache);
+    }
+
+    Shader& operator=(Shader&& other) {
+        if (this != &other) {
+            id = other.id;
+            other.id = 0;
+            filepath = std::move(other.filepath);
+            uniform_location_cache = std::move(other.uniform_location_cache);
+        }
+        return *this;
+    }
 
     // set uniforms
     void set_uniform_1i(const std::string& name, int value);
