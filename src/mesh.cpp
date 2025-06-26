@@ -39,6 +39,10 @@ void Mesh::unbind() const {
     //texture.unbind();
 }
 
+void Mesh::draw() const {
+    gl_call(glDrawElements(GL_TRIANGLES, index_buffer.get_count(), GL_UNSIGNED_INT, nullptr));
+}
+
 Mesh Mesh::rectangle(const glm::vec2 size, Texture texture, bool centered) {
     std::vector<Vertex> vertices = {
         { { 0.0f,   0.0f   }, { 0.0f, 0.0f } },

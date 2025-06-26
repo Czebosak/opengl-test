@@ -205,8 +205,7 @@ int main(void) {
 
             shader.set_uniform_mat4f("u_mpv", mvp);
             mesh.bind();
-
-            gl_call(glDrawElements(GL_TRIANGLES, mesh.get_index_buffer().get_count(), GL_UNSIGNED_INT, nullptr));
+            mesh.draw();
         }
 
         float current_frame = glfwGetTime();

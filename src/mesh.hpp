@@ -34,6 +34,8 @@ public:
     void bind() const;
     void unbind() const;
 
+    void draw() const;
+
     VertexArray& get_vertex_array() { return vertex_array; }
     VertexBuffer& get_vertex_buffer() { return vertex_buffer; }
     IndexBuffer& get_index_buffer() { return index_buffer; }
