@@ -42,16 +42,16 @@ Shader::ProgramSource Shader::parse(const std::string& filename) {
     return { ss[0].str(), ss[1].str() };
 }
 
-unsigned int Shader::compile(unsigned int type, const std::string& source) {
-    gl_call(unsigned int id = glCreateShader(type));
+u32 Shader::compile(u32 type, const std::string& source) {
+    gl_call(u32 id = glCreateShader(type));
     const char* src = source.c_str();
     gl_call(glShaderSource(id, 1, &src, nullptr));
     gl_call(glCompileShader(id));
 
-    int result;
+    i32 result;
     gl_call(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
     if (result == GL_FALSE) {
-        int length;
+        i32 length;
         gl_call(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
         char* message = (char*)alloca(length * sizeof(char));
         gl_call(glGetShaderInfoLog(id, length, &length, message));
@@ -64,10 +64,10 @@ unsigned int Shader::compile(unsigned int type, const std::string& source) {
     return id;
 }
 
-unsigned int Shader::create(Shader::ProgramSource& source) {
-    gl_call(unsigned int program = glCreateProgram());
-    unsigned int vs = Shader::compile(GL_VERTEX_SHADER, source.vertex_source);
-    unsigned int fs = Shader::compile(GL_FRAGMENT_SHADER, source.fragment_source);
+u32 Shader::create(Shader::ProgramSource& source) {
+    gl_call(u32 program = glCreateProgram());
+    u32 vs = Shader::compile(GL_VERTEX_SHADER, source.vertex_source);
+    u32 fs = Shader::compile(GL_FRAGMENT_SHADER, source.fragment_source);
 
     gl_call(glAttachShader(program, vs));
     gl_call(glAttachShader(program, fs));
@@ -104,8 +104,8 @@ void Shader::set_uniform_mat4f(const std::string& name, const glm::mat4& matrix)
     gl_call(glUniformMatrix4fv(get_uniform_location(name.c_str()), 1, GL_FALSE, &matrix[0][0]));
 }
 
-int Shader::get_uniform_location(const std::string& name) {
-    int location;
+i32 Shader::get_uniform_location(const std::string& name) {
+    i32 location;
 
     auto it = uniform_location_cache.find(name);
     if (it == uniform_location_cache.end()) {

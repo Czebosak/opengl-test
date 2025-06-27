@@ -3,14 +3,16 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <utils.hpp>
+
 #include <glm/glm.hpp>
 
 class Shader {
 private:
-    unsigned int id;
+    u32 id;
     std::string filepath;
 
-    std::unordered_map<std::string, int> uniform_location_cache;
+    std::unordered_map<std::string, i32> uniform_location_cache;
     
     struct ProgramSource {
         std::string vertex_source;
@@ -18,10 +20,10 @@ private:
     };
     
     static Shader::ProgramSource parse(const std::string& filename);
-    static unsigned int create(Shader::ProgramSource& source);
-    static unsigned int compile(unsigned int type, const std::string& source);
+    static u32 create(Shader::ProgramSource& source);
+    static u32 compile(u32 type, const std::string& source);
 
-    int get_uniform_location(const std::string& name);
+    i32 get_uniform_location(const std::string& name);
 public:
     Shader(const std::string& filepath);
     ~Shader();
