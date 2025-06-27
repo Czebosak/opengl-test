@@ -4,8 +4,8 @@
 #include <vertex_buffer.hpp>
 #include <vertex_buffer_layout.hpp>
 
-Mesh::Mesh(std::vector<Vertex>&& vertices, std::vector<u32>&& indices, Texture texture)
-    : vertices(std::move(vertices)), indices(std::move(indices)), texture(std::move(texture)) {
+Mesh::Mesh(std::vector<Vertex>&& vertices, std::vector<u32>&& indices)
+    : vertices(std::move(vertices)), indices(std::move(indices)) {
     /* VertexArray va;
     VertexBuffer vb(&vertices[0], sizeof(Vertex) * vertices.size());
 
@@ -43,7 +43,7 @@ void Mesh::draw() const {
     gl_call(glDrawElements(GL_TRIANGLES, index_buffer.get_count(), GL_UNSIGNED_INT, nullptr));
 }
 
-Mesh Mesh::rectangle(const glm::vec2 size, Texture texture, bool centered) {
+Mesh Mesh::rectangle(const glm::vec2 size, bool centered) {
     std::vector<Vertex> vertices = {
         { { 0.0f,   0.0f   }, { 0.0f, 0.0f } },
         { { size.x, 0.0f   }, { 1.0f, 0.0f } },
@@ -56,5 +56,5 @@ Mesh Mesh::rectangle(const glm::vec2 size, Texture texture, bool centered) {
         0, 2, 3
     };
 
-    return Mesh(std::move(vertices), std::move(indices), texture);
+    return Mesh(std::move(vertices), std::move(indices));
 }

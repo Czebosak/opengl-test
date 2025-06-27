@@ -59,6 +59,7 @@ public:
     // set uniforms
     void set_uniform_1i(const std::string& name, int value);
     void set_uniform_1f(const std::string& name, float value);
+    void set_uniform_v2(const std::string& name, float x, float y);
     void set_uniform_v4(const std::string& name, float x, float y, float z, float w);
     void set_uniform_mat4f(const std::string& name, const glm::mat4& matrix);
 };

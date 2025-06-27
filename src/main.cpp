@@ -11,6 +11,7 @@
 #include <shader.hpp>
 #include <texture.hpp>
 #include <sprite.hpp>
+#include <ui.hpp>
 
 #include <vertex_buffer_layout.hpp>
 #include <vertex_buffer.hpp>
@@ -103,7 +104,8 @@ int main(void) {
 
     glfwSetDropCallback(window, drop_callback);
 
-    Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f), Texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST));
+    Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f));
+    Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
 
     int window_width, window_height;
     glfwGetWindowSize(window, &window_width, &window_height);
@@ -114,7 +116,7 @@ int main(void) {
     shader.bind();
     shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
 
-    mesh.get_texture().bind();
+    texture.bind();
     shader.set_uniform_1i("u_texture", 0);
     
     shader.unbind();
@@ -140,8 +142,20 @@ int main(void) {
         std::cout << timestamp << "\n";
     } */
 
-    ma_sound sound;
+    ui::Context context(glm::vec2(window_width, window_height));
 
+    Shader background_shader(ASSETS_PATH"/shaders/basic.glsl");
+    background_shader.bind();
+    background_shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
+
+    auto epic_rectangle = std::make_unique<ui::ShaderRectangle>(
+        ui::Anchor(0.2f, 0.2f, 0.2f, 0.2f),
+        std::move(background_shader)
+    );
+
+    context.root.add_child(std::move(epic_rectangle));
+
+    ma_sound sound;
     
     printf(DATA_PATH"/audio.mp3\n");
     ma_result result = ma_sound_init_from_file(&audio_engine, DATA_PATH"/songs/audio.mp3", 0, NULL, NULL, &sound);
@@ -196,21 +210,32 @@ int main(void) {
         }
         
         glm::mat4 view = glm::translate(glm::mat4(1.0f), camera_translation);
+        glm::mat4 pv_matrix = projection_matrix * view;
 
         shader.bind();
 
         {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_a);
-            glm::mat4 mvp = projection_matrix * view * model;
+            glm::mat4 mvp = pv_matrix * model;
 
             shader.set_mvp(mvp);
             mesh.bind();
+            texture.bind();
             mesh.draw();
         }
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
+
+        context.update();
+        context.draw(projection_matrix);
+
+        for (auto& child : context.root.get_children()) {
+            glm::vec2 pos = child.get()->get_position();
+            glm::vec2 size = child.get()->get_size();
+            //std::cout << pos.x << " " << pos.y << " " << size.x << " " << size.y << "\n";
+        }
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
