@@ -6,10 +6,13 @@
 
 #include "renderer.hpp"
 
-Shader::Shader(const std::string& filepath) : filepath(filepath) {
+Shader::Shader(const std::string& filepath, const std::string& mvp_uniform_name) : filepath(filepath) {
     Shader::ProgramSource source = parse(filepath);
 
     id = create(source);
+    if (mvp_uniform_name != "") {
+        mvp_uniform_location = get_uniform_location(mvp_uniform_name);
+    }
 }
 
 Shader::~Shader() {
@@ -86,6 +89,10 @@ void Shader::bind() const {
 
 void Shader::unbind() const {
     gl_call(glUseProgram(0));
+}
+
+void Shader::set_mvp(const glm::mat4& matrix) {
+    gl_call(glUniformMatrix4fv(mvp_uniform_location, 1, GL_FALSE, &matrix[0][0]));
 }
 
 void Shader::set_uniform_1i(const std::string& name, int value) {

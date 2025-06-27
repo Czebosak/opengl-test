@@ -203,7 +203,7 @@ int main(void) {
             glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_a);
             glm::mat4 mvp = projection_matrix * view * model;
 
-            shader.set_uniform_mat4f("u_mpv", mvp);
+            shader.set_mvp(mvp);
             mesh.bind();
             mesh.draw();
         }

@@ -12,6 +12,8 @@ private:
     u32 id;
     std::string filepath;
 
+    i32 mvp_uniform_location;
+
     std::unordered_map<std::string, i32> uniform_location_cache;
     
     struct ProgramSource {
@@ -25,7 +27,7 @@ private:
 
     i32 get_uniform_location(const std::string& name);
 public:
-    Shader(const std::string& filepath);
+    Shader(const std::string& filepath, const std::string& mvp_uniform_name = "mvp");
     ~Shader();
 
     void bind() const;
@@ -50,6 +52,9 @@ public:
         }
         return *this;
     }
+
+    // common uniforms
+    void set_mvp(const glm::mat4& matrix);
 
     // set uniforms
     void set_uniform_1i(const std::string& name, int value);
