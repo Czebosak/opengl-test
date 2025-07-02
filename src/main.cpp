@@ -22,11 +22,14 @@
 #include <miniaudio.h>
 
 #include <osu_parser.hpp>
+#include <functional>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-float CAMERA_SPEED = 1000.0f;
+const float CAMERA_SPEED = 1000.0f;
+
+ui::Context* ui_context_ptr = nullptr;
 
 void unzip_song(const char* path) {
     elz::extractZip(path, DATA_PATH"/songs");
@@ -40,6 +43,19 @@ void drop_callback(GLFWwindow* window, int count, const char** paths) {
 
 void song_frame(float delta) {
 
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    printf("%d, %d, %d", button, action, mods);
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+
+    int window_x, window_y;
+    glfwGetWindowSize(window, &window_x, &window_y);
+
+    float converted_y = (static_cast<float>(y) * -1.0f) + static_cast<float>(window_y);
+
+    ui_context_ptr->handle_mouse_button_input(static_cast<float>(x), converted_y, (ui::MouseButton)button, (ui::MouseButtonAction)action);
 }
 
 GLFWwindow* setup_window_and_context(u32 width, u32 height, const char* title) {
@@ -103,6 +119,7 @@ int main(void) {
     }
 
     glfwSetDropCallback(window, drop_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f));
     Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
@@ -143,6 +160,7 @@ int main(void) {
     } */
 
     ui::Context context(glm::vec2(window_width, window_height));
+    ui_context_ptr = &context;
 
     Shader background_shader(ASSETS_PATH"/shaders/basic.glsl");
     background_shader.bind();
@@ -153,22 +171,51 @@ int main(void) {
         std::move(background_shader)
     );
 
+    auto epic_rectangle_ptr = epic_rectangle.get();
+
+    Shader button_shader(ASSETS_PATH"/shaders/basic.glsl");
+    button_shader.bind();
+    button_shader.set_uniform_v4("u_color", 0.4f, 0.4f, 0.4f, 1.0f);
+    auto epic_button = std::make_unique<ui::ShaderButton>(
+        ui::Anchor(0.1, 0.1, 0.9, 0.9),
+        std::move(button_shader),
+        [epic_rectangle_ptr](ui::Element* e, ui::MouseButton button, ui::MouseButtonAction action) {
+            if (button == ui::MouseButton::LEFT) {
+                epic_rectangle_ptr->shader.bind();
+
+                if (action == ui::MouseButtonAction::PRESSED) {
+                    std::cout << "Clicked! x3" << std::endl;
+                    epic_rectangle_ptr->shader.set_uniform_v4("u_color", 0.5f, 0.5f, 1.0f, 1.0f);
+                } else {
+                    epic_rectangle_ptr->shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
+                }
+            }
+        }
+    );
+
+    epic_rectangle.get()->add_child(std::move(epic_button));
+
     context.root.add_child(std::move(epic_rectangle));
+
+    /* Shader background_shader2(ASSETS_PATH"/shaders/basic.glsl");
+    background_shader2.bind();
+    background_shader2.set_uniform_v4("u_color", 0.5f, 1.0f, 1.0f, 1.0f);
+
+    auto epic_rectangle2 = std::make_unique<ui::ShaderRectangle>(
+        ui::Anchor(0.2f, 0.2f, 0.2f, 0.2f),
+        std::move(background_shader2)
+    );
+
+    epic_rectangle.get()->add_child(std::move(epic_rectangle2)); */
 
     ma_sound sound;
     
-    printf(DATA_PATH"/audio.mp3\n");
     ma_result result = ma_sound_init_from_file(&audio_engine, DATA_PATH"/songs/audio.mp3", 0, NULL, NULL, &sound);
-    printf("WEEE ARE HEEERE\n");
     if (result != MA_SUCCESS) {
-        printf("WEEE ARE HEEERE4\n");
         return result;
-        printf("WEEE ARE HEEERE5\n");
     }
-
-    printf("WEEE ARE HEEERE3\n");
+    
     ma_sound_start(&sound);
-    printf("WEEE ARE HEEERE2\n");
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;

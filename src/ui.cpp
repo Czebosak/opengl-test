@@ -1,6 +1,7 @@
 #include "ui.hpp"
 
 #include <glm/ext/matrix_transform.hpp>
+#include <GLFW/glfw3.h>
 
 namespace ui {
     glm::vec4 Anchor::to_position(glm::vec2 position, glm::vec2 size) {
@@ -43,6 +44,8 @@ namespace ui {
         children.emplace_back(std::move(element));
     }
 
+    Container::Container(Anchor anchor) : Element(anchor) {}
+
     void Container::add_child(std::unique_ptr<Element> element) {
         children.emplace_back(std::move(element));
         dirty = true;
@@ -53,19 +56,58 @@ namespace ui {
         return model;
     }
 
-    ShaderRectangle::ShaderRectangle(glm::vec2 position, glm::vec2 size, Shader&& shader)
-    : Drawable(position, size), mesh(Mesh::rectangle(glm::vec2(1.0f))), shader(std::move(shader)) {}
+    ShaderRectangle::ShaderRectangle(glm::vec2 position, glm::vec2 size, Shader&& shader, float scale)
+    : Element(position, size), Drawable(position, size, scale), mesh(Mesh::rectangle(glm::vec2(1.0f))), shader(std::move(shader)) {}
 
-    ShaderRectangle::ShaderRectangle(Anchor anchor, Shader&& shader)
-    : Drawable(anchor), mesh(Mesh::rectangle(glm::vec2(1.0f))), shader(std::move(shader)) {}
+    ShaderRectangle::ShaderRectangle(Anchor anchor, Shader&& shader, float scale)
+    : Element(anchor), Drawable(anchor, scale), mesh(Mesh::rectangle(glm::vec2(1.0f))), shader(std::move(shader)) {}
 
     void ShaderRectangle::draw(const glm::mat4& projection_matrix) {
         shader.bind();
         shader.set_mvp(projection_matrix * get_model_matrix());
-        printf("%f, %f | %f, %f\n", position.x, position.y, size.x, size.y);
-        shader.set_uniform_v2("scale", size.x, size.y);
+        shader.set_uniform_v2("scale", size.x * scale, size.y * scale);
         mesh.bind();
         mesh.draw();
+    }
+
+    void Context::draw_element(Element* element, const glm::mat4& projection_matrix) {
+        for (const std::unique_ptr<Element>& child : element->get_children()) {
+            if (Drawable* drawable = dynamic_cast<Drawable*>(child.get())) {
+                drawable->draw(projection_matrix);
+            }
+
+            draw_element(child.get(), projection_matrix);
+        }
+    }
+
+    void Context::handle_element_mouse_button_input(Element *element, float x, float y, MouseButton mouse_button, MouseButtonAction mouse_button_action) {
+        for (const std::unique_ptr<Element>& child : element->get_children()) {
+            //printf("scp 2 ");
+            if (Interactable* interactable = dynamic_cast<Interactable*>(child.get())) {
+                glm::vec2 pos = interactable->get_position();
+                glm::vec2 size = interactable->get_size();
+
+                //std::cout << pos.x << ", " << pos.y << "   " << size.x << ", " << size.y << "    " << x << ", " << y << std::endl;
+
+
+                //std::cout << (pos.x <= x && x <= pos.x + size.x) << ", " << (pos.y <= y && y <= pos.y + size.y) << std::endl;
+
+                // std::cout << pos.y << " <= " << y << " && " << y << " <= " << pos.y + size.y << std::endl;
+
+                // std::cout << (pos.y <= y && y <= pos.y + size.y) << std::endl;
+
+                if (
+                    (pos.x <= x && x <= pos.x + size.x) &&
+                    (pos.y <= y && y <= pos.y + size.y)
+                ) {
+                    if (interactable->on_mouse_action_callback) {
+                        interactable->on_mouse_action_callback(interactable, mouse_button, mouse_button_action);
+                    }
+                }
+            }
+
+            handle_element_mouse_button_input(child.get(), x, y, mouse_button, mouse_button_action);
+        }
     }
 
     Context::Context(glm::vec2 viewport_size) : root(glm::vec2(0.0f), viewport_size) {}
@@ -75,10 +117,12 @@ namespace ui {
     }
 
     void Context::draw(const glm::mat4& projection_matrix) {
-        for (const std::unique_ptr<Element>& child : root.get_children()) {
-            if (Drawable* drawable = dynamic_cast<Drawable*>(child.get())) {
-                drawable->draw(projection_matrix);
-            }
-        }
+        draw_element(&root, projection_matrix);
     }
+    
+    void Context::handle_mouse_button_input(float x, float y, MouseButton mouse_button, MouseButtonAction mouse_button_action) {
+        handle_element_mouse_button_input(&root, x, y, mouse_button, mouse_button_action);
+    }
+
+    void Context::handle_mouse_movement(float x, float y) {}
 }
