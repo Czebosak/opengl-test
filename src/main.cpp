@@ -46,7 +46,6 @@ void song_frame(float delta) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    printf("%d, %d, %d", button, action, mods);
     double x, y;
     glfwGetCursorPos(window, &x, &y);
 
@@ -277,12 +276,6 @@ int main(void) {
 
         context.update();
         context.draw(projection_matrix);
-
-        for (auto& child : context.root.get_children()) {
-            glm::vec2 pos = child.get()->get_position();
-            glm::vec2 size = child.get()->get_size();
-            //std::cout << pos.x << " " << pos.y << " " << size.x << " " << size.y << "\n";
-        }
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -82,19 +82,9 @@ namespace ui {
 
     void Context::handle_element_mouse_button_input(Element *element, float x, float y, MouseButton mouse_button, MouseButtonAction mouse_button_action) {
         for (const std::unique_ptr<Element>& child : element->get_children()) {
-            //printf("scp 2 ");
             if (Interactable* interactable = dynamic_cast<Interactable*>(child.get())) {
                 glm::vec2 pos = interactable->get_position();
                 glm::vec2 size = interactable->get_size();
-
-                //std::cout << pos.x << ", " << pos.y << "   " << size.x << ", " << size.y << "    " << x << ", " << y << std::endl;
-
-
-                //std::cout << (pos.x <= x && x <= pos.x + size.x) << ", " << (pos.y <= y && y <= pos.y + size.y) << std::endl;
-
-                // std::cout << pos.y << " <= " << y << " && " << y << " <= " << pos.y + size.y << std::endl;
-
-                // std::cout << (pos.y <= y && y <= pos.y + size.y) << std::endl;
 
                 if (
                     (pos.x <= x && x <= pos.x + size.x) &&
