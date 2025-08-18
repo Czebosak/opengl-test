@@ -6,6 +6,15 @@
 #include <cctype>
 #include <iostream>
 
+ObjectType::ObjectType(u8 byte) {
+    circle     = byte & (1 << 0);
+    slider     = byte & (1 << 1);
+    combo_mark = byte & (1 << 2);
+    spinner    = byte & (1 << 3);
+    color_hax  = (byte >> 4) & 0b111;
+    hold_note  = byte & (1 << 7);
+}
+
 UndecodedBeatmap parse_osu_file(std::string filepath) {
     UndecodedBeatmap beatmap;
 
@@ -51,37 +60,46 @@ UndecodedBeatmap parse_osu_file(std::string filepath) {
     return beatmap;
 }
 
+template <std::size_t N>
+std::array<std::string_view, N> split_by_comma(std::string_view s) {
+    std::array<std::string_view, N> split_data;
+
+    size_t last_idx = 0;
+    for (size_t j = 0; j < split_data.size(); j++) {
+        size_t idx;
+        if (j == 7) {
+            idx == s.size() - 1;
+        } else {
+            idx = s.find(',', last_idx);
+        }
+
+        if (idx == std::string::npos) {
+            printf("Invalid OSU file syntax\n");
+            return {};
+        }
+
+        split_data[j] = s.substr(last_idx, idx - last_idx);
+        last_idx = idx + 1;
+    }
+
+    return split_data;
+}
+
+#define CONVERT(var) (i++, std::from_chars(split_data[i - 1].begin(), split_data[i - 1].end(), var).ec == std::errc())
+
+#define TIMING_POINT_VALUE_NUMBER 8
 std::vector<TimingPoint> parse_timing_points(const std::vector<std::string>& data) {
     std::vector<TimingPoint> timing_points;
     timing_points.reserve(data.size());
 
     for (const std::string_view s : data) {
-        std::array<std::string_view, 8> split_data;
-        size_t last_idx = 0;
-        for (size_t j = 0; j < split_data.size(); j++) {
-            size_t idx;
-            if (j == 7) {
-                idx == s.size() - 1;
-            } else {
-                idx = s.find(',', last_idx);
-            }
-
-            if (idx == std::string::npos) {
-                printf("Invalid timing point syntax\n");
-                return {};
-            }
-
-            split_data[j] = s.substr(last_idx, idx - last_idx);
-            last_idx = idx + 1;
-        }
+        std::array<std::string_view, TIMING_POINT_VALUE_NUMBER> split_data = split_by_comma<TIMING_POINT_VALUE_NUMBER>(s);
 
         TimingPoint timing_point;
 
         int i = 0;
 
-        #define CONVERT(var) (i++, std::from_chars(split_data[i - 1].begin(), split_data[i - 1].end(), var).ec == std::errc())
-
-        i32 temp_uninherited;
+        u32 temp_uninherited;
 
         if (
             !CONVERT(timing_point.time) &&
@@ -105,13 +123,55 @@ std::vector<TimingPoint> parse_timing_points(const std::vector<std::string>& dat
     return timing_points;
 }
 
+#define HIT_OBJECT_VALUE_NUMBER 5 // temporary normally its 7
 std::vector<HitObject> parse_hit_objects(const std::vector<std::string>& data) {
     std::vector<HitObject> hit_objects;
     hit_objects.reserve(data.size());
 
-    for (size_t i = 0; i < data.size(); i++) {
-        const std::string& s = data[i];
+    for (const std::string_view s : data) {
+        std::array<std::string_view, HIT_OBJECT_VALUE_NUMBER> split_data = split_by_comma<HIT_OBJECT_VALUE_NUMBER>(s);
+        
+        HitObject hit_object;
+
+        int i = 0;
+
+        u8 temp_type;
+
+        i32 x;
+        i32 y;
+        i32 time;
+        i32 hit_sound;
+
+        CONVERT(hit_object.x);
+        CONVERT(hit_object.y);
+        CONVERT(hit_object.time);
+        CONVERT(temp_type);
+        CONVERT(hit_object.hit_sound);
+
+        i = 0;
+
+        if (
+            !CONVERT(hit_object.x) &&
+            !CONVERT(hit_object.y) &&
+            !CONVERT(hit_object.time) &&
+            !CONVERT(temp_type) &&
+            !CONVERT(hit_object.hit_sound)
+        ) {
+            printf("Couldn't convert type while parsing timing points\n");
+            return {};
+        }
+
+        hit_object.type = ObjectType(temp_type);
+
+        hit_objects.push_back(hit_object);
     }
     
     return hit_objects;
+}
+
+Beatmap decode_beatmap(const UndecodedBeatmap& undecoded_beatmap) {
+    Beatmap beatmap;
+    beatmap.hit_objects = parse_hit_objects(undecoded_beatmap.hit_objects);
+    beatmap.timing_points = parse_timing_points(undecoded_beatmap.timing_points);
+    return beatmap;
 }

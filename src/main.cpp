@@ -142,27 +142,9 @@ int main(void) {
     glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
     glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
 
-    UndecodedBeatmap beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
-    /* for (auto& kv : beatmap.data) {
-        std::cout << "Section: " << kv.first << "\n";
-        for (auto& kv : kv.second) {
-            std::cout << kv.first << ": " << kv.second << "\n";
-        }
-    } */
-    /* std::cout << "\nTimestamps\n";
-    for (std::string& timestamp : beatmap.timing_points) {
-        std::cout << timestamp << "\n";
-    } */
-    /*
-    std::cout << "\nHitObjects\n";
-    for (std::string& timestamp : beatmap.hit_objects) {
-        std::cout << timestamp << "\n";
-    } */
+    UndecodedBeatmap undecoded_beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
 
-    std::vector<TimingPoint> timing_points = parse_timing_points(beatmap.timing_points);
-    for (TimingPoint& timing_point : timing_points) {
-        std::cout << timing_point.time << "\n";
-    }
+    Beatmap beatmap = decode_beatmap(undecoded_beatmap);
 
     ui::Context context(glm::vec2(window_width, window_height));
     ui_context_ptr = &context;
