@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
 
 #include <renderer.hpp>
 
-int TextRenderer::load_font(const char* file_path, unsigned int font_size) {
+/* int TextRenderer::load_font(const char* file_path, unsigned int font_size) {
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
     {
@@ -63,7 +63,7 @@ int TextRenderer::load_font(const char* file_path, unsigned int font_size) {
     }
 
     return 0;
-}
+} */
 
 void TextRenderer::render_text(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color) {
     /* shader.bind();

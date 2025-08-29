@@ -60,6 +60,8 @@ private:
     
     Difficulty beatmap_difficulty;
 
+    float circle_diameter;
+
     double time;
     size_t visible_circles_index_start;
     size_t visible_circles_index_end;
@@ -71,6 +73,7 @@ private:
     std::optional<std::string> fill_beatmap_difficulty();
 
     void calculate_approach_time();
+    void calculate_circle_diameter();
     void calculate_visible_circles();
 public:
     BeatmapPlayer(glm::vec2 screen_resolution);

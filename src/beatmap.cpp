@@ -18,10 +18,10 @@ BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution) : circle_shader(ASSETS
     time = 0.0;
 
     Vertex vertices[4] = {
-        { { 0.0f,  0.0f  },  { 0.0f, 0.0f } },
-        { { 40.0f, 0.0f  },  { 1.0f, 0.0f } },
-        { { 40.0f, 40.0f }, { 1.0f, 1.0f } },
-        { { 0.0f,  40.0f }, { 0.0f, 1.0f } }
+        { { 0.0f, 0.0f }, { 0.0f, 0.0f } },
+        { { 1.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { 1.0f, 1.0f }, { 1.0f, 1.0f } },
+        { { 0.0f, 1.0f }, { 0.0f, 1.0f } }
     };
 
     u32 indices[6] = {
@@ -52,7 +52,6 @@ BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution) : circle_shader(ASSETS
 
     circle_shader.bind();
     circle_shader.set_mvp(playfield.mvp);
-    circle_shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 bool convert_string_to_float(const std::string& s, float& n) {
@@ -109,6 +108,12 @@ void BeatmapPlayer::calculate_approach_time() {
     if (approach_rate > 5.0f) approach_time -= (approach_rate - 5.0f) * 150.0f;
 }
 
+void BeatmapPlayer::calculate_circle_diameter() {
+    float circle_radius = 54.4f - 4.48f * beatmap_difficulty.circle_size;
+    circle_diameter = circle_radius * 2.0f;
+    circle_shader.set_uniform_1f("circle_diameter", circle_diameter);
+}
+
 void BeatmapPlayer::calculate_visible_circles() {
     const std::vector<HitObject>& hit_objects = loaded_beatmap->hit_objects;
 
@@ -157,6 +162,8 @@ std::optional<std::string> BeatmapPlayer::load_beatmap(const Beatmap& beatmap) {
     if (auto err = fill_beatmap_difficulty()) return err;
 
     calculate_approach_time();
+
+    calculate_circle_diameter();
 
     /* hit_object_positions.reserve(beatmap.hit_objects.size());
     for (int i = 0; i < beatmap.hit_objects.size(); i++) {

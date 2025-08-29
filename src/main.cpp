@@ -42,10 +42,6 @@ void drop_callback(GLFWwindow* window, int count, const char** paths) {
     }
 }
 
-void song_frame(float delta) {
-
-}
-
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     double x, y;
     glfwGetCursorPos(window, &x, &y);
@@ -225,46 +221,11 @@ int main(void) {
         ImGui::NewFrame();
 
         /* {
-            ImGui::Begin("Very epic move window!");
+            ImGui:f:Begin("Very epic move window!");
 
             ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
 
             ImGui::End();
-        }
-
-        {
-            glm::vec3 input(0.0f);
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-                input.y -= 1.0f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-                input.y += 1.0f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-                input.x += 1.0f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-                input.x -= 1.0f;
-            }
-
-            if (glm::length(input) != 0.0f) {
-                camera_translation += glm::normalize(input) * CAMERA_SPEED * delta_time;
-            }
-        }
-        
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), camera_translation);
-        glm::mat4 pv_matrix = projection_matrix * view;
-
-        shader.bind();
-
-        {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation_a);
-            glm::mat4 mvp = pv_matrix * model;
-
-            shader.set_mvp(mvp);
-            mesh.bind();
-            texture.bind();
-            mesh.draw();
         } */
 
         float current_frame = glfwGetTime();
