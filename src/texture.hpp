@@ -6,11 +6,11 @@
 
 class Texture {
 private:
-    unsigned int id;
+    u32 id;
     std::string file_path;
     int width, height, bpp;
 public:
-    Texture(const std::string& path, GLenum filter = GL_LINEAR);
+    Texture(const std::string& path, GLenum filter = GL_LINEAR, GLenum internal_format = GL_RGBA8, GLenum format = GL_RGBA);
     ~Texture();
 
     void bind(unsigned int slot = 0) const;

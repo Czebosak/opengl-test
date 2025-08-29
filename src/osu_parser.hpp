@@ -2,7 +2,6 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include <beatmap.hpp>
 
 #include <utils.hpp>
 
@@ -48,5 +47,3 @@ UndecodedBeatmap parse_osu_file(std::string filepath);
 std::vector<TimingPoint> parse_timing_points(const std::vector<std::string>& data);
 
 std::vector<HitObject> parse_hit_objects(const std::vector<std::string>& data);
-
-Beatmap decode_beatmap(const UndecodedBeatmap& beatmap);

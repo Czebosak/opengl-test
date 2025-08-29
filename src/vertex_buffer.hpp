@@ -1,15 +1,22 @@
 #pragma once
 
+#include <utils.hpp>
+#include <cstddef>
+
 class VertexBuffer {
 private:
-    unsigned int id;
+    u32 id;
 public:
     VertexBuffer();
-    VertexBuffer(const void* data, unsigned int size);
+    VertexBuffer(const void* data, size_t size);
     ~VertexBuffer();
 
     void bind() const;
     void unbind() const;
+
+    void set_data(const void* data, size_t size);
+    void resize(size_t old_size, size_t new_size);
+    
 
     VertexBuffer(const VertexBuffer&) = delete;
     VertexBuffer& operator=(const VertexBuffer&) = delete;

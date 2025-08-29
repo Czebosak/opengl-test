@@ -21,7 +21,8 @@
 #include <elzip.hpp>
 #include <miniaudio.h>
 
-#include <osu_parser.hpp>
+#include <beatmap.hpp>
+
 #include <functional>
 
 #include <glm/glm.hpp>
@@ -126,7 +127,7 @@ int main(void) {
     int window_width, window_height;
     glfwGetWindowSize(window, &window_width, &window_height);
     
-    glm::mat4 projection_matrix = glm::ortho(0.0f, float(window_width), 0.0f, float(window_height), -1.0f, 1.0f);
+    glm::mat4 projection_matrix = glm::ortho(0.0f, float(window_width), 0.0f, float(window_height));
 
     Shader shader(ASSETS_PATH"/shaders/texture.glsl");
     shader.bind();
@@ -142,9 +143,17 @@ int main(void) {
     glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
     glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
 
+
     UndecodedBeatmap undecoded_beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
 
-    Beatmap beatmap = decode_beatmap(undecoded_beatmap);
+    Beatmap beatmap(std::move(undecoded_beatmap));
+
+    BeatmapPlayer beatmap_player(glm::vec2(window_width, window_height));
+    
+    if (auto err = beatmap_player.load_beatmap(beatmap)) {
+        std::cout << *err;
+        return -1;
+    }
 
     ui::Context context(glm::vec2(window_width, window_height));
     ui_context_ptr = &context;
@@ -215,7 +224,7 @@ int main(void) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        {
+        /* {
             ImGui::Begin("Very epic move window!");
 
             ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
@@ -256,14 +265,17 @@ int main(void) {
             mesh.bind();
             texture.bind();
             mesh.draw();
-        }
+        } */
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
-        context.update();
-        context.draw(projection_matrix);
+        beatmap_player.update(delta_time);
+        beatmap_player.draw();
+
+        //context.update();
+        //context.draw(projection_matrix);
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

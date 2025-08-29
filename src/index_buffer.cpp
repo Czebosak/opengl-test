@@ -3,10 +3,10 @@
 
 IndexBuffer::IndexBuffer() {}
 
-IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count) : count(count) {
+IndexBuffer::IndexBuffer(const u32* data, u32 count) : count(count) {
     gl_call(glGenBuffers(1, &id));
     gl_call(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id));
-    gl_call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW));
+    gl_call(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(u32), data, GL_STATIC_DRAW));
 }
 
 IndexBuffer::~IndexBuffer() {

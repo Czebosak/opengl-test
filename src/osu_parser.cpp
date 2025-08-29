@@ -102,14 +102,16 @@ std::vector<TimingPoint> parse_timing_points(const std::vector<std::string>& dat
         u32 temp_uninherited;
 
         if (
-            !CONVERT(timing_point.time) &&
-            !CONVERT(timing_point.beat_length) &&
-            !CONVERT(timing_point.meter) &&
-            !CONVERT(timing_point.sample_set) &&
-            !CONVERT(timing_point.sample_index) &&
-            !CONVERT(timing_point.volume) &&
-            !CONVERT(temp_uninherited) &&
-            !CONVERT(timing_point.effects)
+            !(
+                CONVERT(timing_point.time) &&
+                CONVERT(timing_point.beat_length) &&
+                CONVERT(timing_point.meter) &&
+                CONVERT(timing_point.sample_set) &&
+                CONVERT(timing_point.sample_index) &&
+                CONVERT(timing_point.volume) &&
+                CONVERT(temp_uninherited) &&
+                CONVERT(timing_point.effects)
+            )
         ) {
             printf("Couldn't convert type while parsing timing points\n");
             return {};
@@ -142,20 +144,22 @@ std::vector<HitObject> parse_hit_objects(const std::vector<std::string>& data) {
         i32 time;
         i32 hit_sound;
 
-        CONVERT(hit_object.x);
+        /* CONVERT(hit_object.x);
         CONVERT(hit_object.y);
         CONVERT(hit_object.time);
         CONVERT(temp_type);
-        CONVERT(hit_object.hit_sound);
+        CONVERT(hit_object.hit_sound); */
 
         i = 0;
 
         if (
-            !CONVERT(hit_object.x) &&
-            !CONVERT(hit_object.y) &&
-            !CONVERT(hit_object.time) &&
-            !CONVERT(temp_type) &&
-            !CONVERT(hit_object.hit_sound)
+            !(
+                CONVERT(hit_object.x) &&
+                CONVERT(hit_object.y) &&
+                CONVERT(hit_object.time) &&
+                CONVERT(temp_type) &&
+                CONVERT(hit_object.hit_sound)
+            )
         ) {
             printf("Couldn't convert type while parsing timing points\n");
             return {};
@@ -167,11 +171,4 @@ std::vector<HitObject> parse_hit_objects(const std::vector<std::string>& data) {
     }
     
     return hit_objects;
-}
-
-Beatmap decode_beatmap(const UndecodedBeatmap& undecoded_beatmap) {
-    Beatmap beatmap;
-    beatmap.hit_objects = parse_hit_objects(undecoded_beatmap.hit_objects);
-    beatmap.timing_points = parse_timing_points(undecoded_beatmap.timing_points);
-    return beatmap;
 }

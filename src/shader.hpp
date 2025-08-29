@@ -41,6 +41,8 @@ public:
         other.id = 0;
         filepath = std::move(other.filepath);
         uniform_location_cache = std::move(other.uniform_location_cache);
+
+        mvp_uniform_location = other.mvp_uniform_location;
     }
 
     Shader& operator=(Shader&& other) {
@@ -49,6 +51,8 @@ public:
             other.id = 0;
             filepath = std::move(other.filepath);
             uniform_location_cache = std::move(other.uniform_location_cache);
+
+            mvp_uniform_location = other.mvp_uniform_location;
         }
         return *this;
     }

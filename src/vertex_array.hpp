@@ -2,11 +2,14 @@
 
 #include <vertex_buffer.hpp>
 
+#include <utils.hpp>
+
 class VertexBufferLayout;
 
 class VertexArray {
 private:
-    unsigned int id;
+    u32 id;
+    int attribute_index;
 public:
     VertexArray();
     ~VertexArray();
