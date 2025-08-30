@@ -30,6 +30,8 @@
 
 const float CAMERA_SPEED = 1000.0f;
 
+bool developer_mode = false;
+
 ui::Context* ui_context_ptr = nullptr;
 
 void unzip_song(const char* path) {
@@ -43,15 +45,24 @@ void drop_callback(GLFWwindow* window, int count, const char** paths) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMouseButtonEvent(button, static_cast<bool>(action));
 
-    int window_x, window_y;
-    glfwGetWindowSize(window, &window_x, &window_y);
+    if (!io.WantCaptureMouse) {
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
 
-    float converted_y = (static_cast<float>(y) * -1.0f) + static_cast<float>(window_y);
+        int window_x, window_y;
+        glfwGetWindowSize(window, &window_x, &window_y);
 
-    ui_context_ptr->handle_mouse_button_input(static_cast<float>(x), converted_y, (ui::MouseButton)button, (ui::MouseButtonAction)action);
+        float converted_y = (static_cast<float>(y) * -1.0f) + static_cast<float>(window_y);
+
+        ui_context_ptr->handle_mouse_button_input(static_cast<float>(x), converted_y, (ui::MouseButton)button, (ui::MouseButtonAction)action);
+    }
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) developer_mode = !developer_mode;
 }
 
 GLFWwindow* setup_window_and_context(u32 width, u32 height, const char* title) {
@@ -116,6 +127,7 @@ int main(void) {
 
     glfwSetDropCallback(window, drop_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     Mesh mesh = Mesh::rectangle(glm::vec2(907.5f, 472.0f));
     Texture texture(ASSETS_PATH"/textures/epic.png", GL_NEAREST);
@@ -136,15 +148,11 @@ int main(void) {
 
     Renderer renderer;
 
-    glm::vec3 translation_a = { 400.0f, 400.0f, 0.0f };
-    glm::vec3 camera_translation = { 0.0f, 0.0f, 0.0f };
-
-
     UndecodedBeatmap undecoded_beatmap = parse_osu_file("/home/czebosak/Development/cpp/graphics/opengl/osushi/data/songs/ONE OK ROCK - Start Again (A r M i N) [A r M i Nakis' Hard].osu");
 
     Beatmap beatmap(std::move(undecoded_beatmap));
 
-    BeatmapPlayer beatmap_player(glm::vec2(window_width, window_height));
+    BeatmapPlayer beatmap_player(glm::vec2(window_width, window_height), audio_engine);
     
     if (auto err = beatmap_player.load_beatmap(beatmap)) {
         std::cout << *err;
@@ -200,14 +208,9 @@ int main(void) {
 
     epic_rectangle.get()->add_child(std::move(epic_rectangle2)); */
 
-    ma_sound sound;
-    
-    ma_result result = ma_sound_init_from_file(&audio_engine, DATA_PATH"/songs/audio.mp3", 0, NULL, NULL, &sound);
-    if (result != MA_SUCCESS) {
-        return result;
-    }
-    
-    ma_sound_start(&sound);
+    char chosen_path[128] = "none";
+
+    //beatmap_player.start();
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;
@@ -220,23 +223,25 @@ int main(void) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        /* {
-            ImGui:f:Begin("Very epic move window!");
+        if (developer_mode) {
+            ImGui::Begin("Very epic move window!");
 
-            ImGui::SliderFloat3("Translation A", &translation_a.x, -640.0f * 2.0f, 640.0f * 2.0f);
+            ImGui::InputText("Path", chosen_path, 128);
+
+            if (ImGui::Button("Load") && chosen_path != "none") {}
 
             ImGui::End();
-        } */
+        }
 
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
-        beatmap_player.update(delta_time);
-        beatmap_player.draw();
+        /* beatmap_player.update(delta_time);
+        beatmap_player.draw(); */
 
-        //context.update();
-        //context.draw(projection_matrix);
+        context.update();
+        context.draw(projection_matrix);
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -247,8 +252,6 @@ int main(void) {
         /* Poll for and process events */
         glfwPollEvents();
     }
-
-    ma_sound_uninit(&sound);
 
     ma_engine_uninit(&audio_engine);
 

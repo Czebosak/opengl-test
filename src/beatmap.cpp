@@ -3,25 +3,27 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vertex_buffer_layout.hpp>
-
+#include <renderer.hpp>
 #include <mesh.hpp>
+
+#include <algorithm>
 
 const size_t INITIAL_HIT_OBJECT_CAPACITY = 20;
 
 Beatmap::Beatmap(const UndecodedBeatmap&& undecoded_beatmap)
 : data(std::move(undecoded_beatmap.data)), timing_points(parse_timing_points(undecoded_beatmap.timing_points)), hit_objects(parse_hit_objects(undecoded_beatmap.hit_objects)) {}
 
-BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution) : circle_shader(ASSETS_PATH"/shaders/circle.glsl") {
+BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution, ma_engine& audio_engine) : audio_engine(audio_engine), circle_shader(ASSETS_PATH"/shaders/circle.glsl"), approach_circle_shader(ASSETS_PATH"/shaders/approach_circle.glsl") {
     last_circle_vector_capacity = 0;
     visible_circles_index_start = 0;
     visible_circles_index_end   = 0;
     time = 0.0;
 
     Vertex vertices[4] = {
-        { { 0.0f, 0.0f }, { 0.0f, 0.0f } },
-        { { 1.0f, 0.0f }, { 1.0f, 0.0f } },
-        { { 1.0f, 1.0f }, { 1.0f, 1.0f } },
-        { { 0.0f, 1.0f }, { 0.0f, 1.0f } }
+        { { -0.5f, -0.5f }, { 0.0f, 0.0f } },
+        { {  0.5f, -0.5f }, { 1.0f, 0.0f } },
+        { {  0.5f,  0.5f }, { 1.0f, 1.0f } },
+        { { -0.5f,  0.5f }, { 0.0f, 1.0f } }
     };
 
     u32 indices[6] = {
@@ -48,10 +50,23 @@ BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution) : circle_shader(ASSETS
 
     circle_vertex_array.add_buffer(circle_positions_buffer, instance_layout);
 
+    approach_circle_buffer = VertexBuffer(nullptr, INITIAL_HIT_OBJECT_CAPACITY * sizeof(float));
+    
+    approach_circle_vertex_array.add_buffer(circle_vertex_buffer, layout);
+    approach_circle_vertex_array.add_buffer(circle_positions_buffer, instance_layout);
+
+    VertexBufferLayout approach_instance_layout;
+    approach_instance_layout.set_divisor(1);
+    approach_instance_layout.push(GL_FLOAT, 1);
+
+    approach_circle_vertex_array.add_buffer(approach_circle_buffer, approach_instance_layout);
+
     playfield.calculate(screen_resolution);
 
     circle_shader.bind();
     circle_shader.set_mvp(playfield.mvp);
+    approach_circle_shader.bind();
+    approach_circle_shader.set_mvp(playfield.mvp);
 }
 
 bool convert_string_to_float(const std::string& s, float& n) {
@@ -107,7 +122,10 @@ void BeatmapPlayer::calculate_approach_time() {
 void BeatmapPlayer::calculate_circle_diameter() {
     float circle_radius = 54.4f - 4.48f * beatmap_difficulty.circle_size;
     circle_diameter = circle_radius * 2.0f;
+    circle_shader.bind();
     circle_shader.set_uniform_1f("circle_diameter", circle_diameter);
+    approach_circle_shader.bind();
+    approach_circle_shader.set_uniform_1f("circle_diameter", circle_diameter);
 }
 
 void BeatmapPlayer::calculate_visible_circles() {
@@ -134,22 +152,34 @@ void BeatmapPlayer::calculate_visible_circles() {
     if (visible_circles_index_end > visible_circles_index_start) {
         size_t length = (visible_circles_index_end - visible_circles_index_start);
         hit_object_positions.resize(length);
-        
+        approach_circle_values.resize(length);
+
         for (int i = 0; i < length; i++) {
             const HitObject& hit_object = hit_objects[i + visible_circles_index_start];
             hit_object_positions[i].x = hit_object.x;
             hit_object_positions[i].y = hit_object.y;
+
+            float remain = (float)(hit_object.time - song_time + approach_time);
+            float a = remain / approach_time;
+            approach_circle_values[i] = std::clamp(a, 0.001f, 2.0f);
         }
     }
 
-    circle_positions_buffer.bind();
-
     if (last_circle_vector_capacity != hit_object_positions.capacity()) {
+        circle_positions_buffer.bind();
         circle_positions_buffer.resize(hit_object_positions.capacity() * sizeof(glm::ivec2));
+
+        approach_circle_buffer.bind();
+        approach_circle_buffer.resize(hit_object_positions.capacity() * sizeof(float));
+
         last_circle_vector_capacity = hit_object_positions.capacity();
     }
 
+    circle_positions_buffer.bind();
     circle_positions_buffer.set_data(hit_object_positions.data(), hit_object_positions.size() * sizeof(glm::ivec2));
+
+    approach_circle_buffer.bind();
+    approach_circle_buffer.set_data(approach_circle_values.data(), approach_circle_values.size() * sizeof(float));
 }
 
 std::optional<std::string> BeatmapPlayer::load_beatmap(const Beatmap& beatmap) {
@@ -164,8 +194,23 @@ std::optional<std::string> BeatmapPlayer::load_beatmap(const Beatmap& beatmap) {
     return std::nullopt;
 }
 
+int BeatmapPlayer::start() {
+    visible_circles_index_start = 0;
+    visible_circles_index_end   = 0;
+    time = 0.0;
+    
+    std::string filename = loaded_beatmap->data.at("General").at("AudioFilename");
+    ma_result result = ma_sound_init_from_file(&audio_engine, (std::string(DATA_PATH) + "/songs/" + filename).c_str(), 0, NULL, NULL, &music);
+    if (result != MA_SUCCESS) {
+        return result;
+    }
+    
+    ma_sound_start(&music);
+    return 0;
+}
+
 void BeatmapPlayer::update(double delta) {
-    time += delta * 1000.0 * 4.0;
+    time += delta * 1000.0 * 1.0;
 
     calculate_visible_circles();
 }
@@ -176,7 +221,14 @@ void BeatmapPlayer::draw() {
         circle_index_buffer.bind();
         circle_shader.bind();
         gl_call(glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, hit_object_positions.size()));
+
+        approach_circle_vertex_array.bind();
+        circle_index_buffer.bind();
+        approach_circle_shader.bind();
+        gl_call(glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, approach_circle_values.size()));
     }
 }
 
-void beatmap_loop() {}
+void beatmap_loop() {
+    //ma_sound_uninit(&sound);
+}
