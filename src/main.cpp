@@ -33,6 +33,7 @@ const float CAMERA_SPEED = 1000.0f;
 bool developer_mode = false;
 
 ui::Context* ui_context_ptr = nullptr;
+BeatmapPlayer* beatmap_player_ptr = nullptr;
 
 void unzip_song(const char* path) {
     elz::extractZip(path, DATA_PATH"/songs");
@@ -48,7 +49,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     ImGuiIO& io = ImGui::GetIO();
     io.AddMouseButtonEvent(button, static_cast<bool>(action));
 
-    if (!io.WantCaptureMouse) {
+    if (!io.WantCaptureMouse && !beatmap_player_ptr->is_playing()) {
         double x, y;
         glfwGetCursorPos(window, &x, &y);
 
@@ -62,7 +63,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) developer_mode = !developer_mode;
+    if      (key == GLFW_KEY_F2 && action == GLFW_PRESS) developer_mode = !developer_mode;
+    else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) beatmap_player_ptr->stop();
 }
 
 GLFWwindow* setup_window_and_context(u32 width, u32 height, const char* title) {
@@ -111,7 +113,7 @@ GLFWwindow* setup_window_and_context(u32 width, u32 height, const char* title) {
 }
 
 int main(void) {
-    GLFWwindow* window = setup_window_and_context(640*2, 480*2, "こんにちは世界x3");
+    GLFWwindow* window = setup_window_and_context(1920, 1080, "こんにちは世界x3");
     if (!window) {
         return -1;
     }
@@ -153,7 +155,8 @@ int main(void) {
     Beatmap beatmap(std::move(undecoded_beatmap));
 
     BeatmapPlayer beatmap_player(glm::vec2(window_width, window_height), audio_engine);
-    
+    beatmap_player_ptr = &beatmap_player;
+
     if (auto err = beatmap_player.load_beatmap(beatmap)) {
         std::cout << *err;
         return -1;
@@ -179,7 +182,7 @@ int main(void) {
     auto epic_button = std::make_unique<ui::ShaderButton>(
         ui::Anchor(0.1, 0.1, 0.9, 0.9),
         std::move(button_shader),
-        [epic_rectangle_ptr](ui::Element* e, ui::MouseButton button, ui::MouseButtonAction action) {
+        [epic_rectangle_ptr, &beatmap_player](ui::Element* e, ui::MouseButton button, ui::MouseButtonAction action) {
             if (button == ui::MouseButton::LEFT) {
                 epic_rectangle_ptr->shader.bind();
 
@@ -187,6 +190,7 @@ int main(void) {
                     std::cout << "Clicked! x3" << std::endl;
                     epic_rectangle_ptr->shader.set_uniform_v4("u_color", 0.5f, 0.5f, 1.0f, 1.0f);
                 } else {
+                    beatmap_player.start();
                     epic_rectangle_ptr->shader.set_uniform_v4("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
                 }
             }
@@ -197,20 +201,7 @@ int main(void) {
 
     context.root.add_child(std::move(epic_rectangle));
 
-    /* Shader background_shader2(ASSETS_PATH"/shaders/basic.glsl");
-    background_shader2.bind();
-    background_shader2.set_uniform_v4("u_color", 0.5f, 1.0f, 1.0f, 1.0f);
-
-    auto epic_rectangle2 = std::make_unique<ui::ShaderRectangle>(
-        ui::Anchor(0.2f, 0.2f, 0.2f, 0.2f),
-        std::move(background_shader2)
-    );
-
-    epic_rectangle.get()->add_child(std::move(epic_rectangle2)); */
-
     char chosen_path[128] = "none";
-
-    //beatmap_player.start();
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;
@@ -237,11 +228,13 @@ int main(void) {
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
-        /* beatmap_player.update(delta_time);
-        beatmap_player.draw(); */
-
-        context.update();
-        context.draw(projection_matrix);
+        if (beatmap_player.is_playing()) {
+            beatmap_player.update(delta_time);
+            beatmap_player.draw();
+        } else {
+            context.update();
+            context.draw(projection_matrix);
+        }
         
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

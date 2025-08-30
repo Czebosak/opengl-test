@@ -13,7 +13,7 @@ const size_t INITIAL_HIT_OBJECT_CAPACITY = 20;
 Beatmap::Beatmap(const UndecodedBeatmap&& undecoded_beatmap)
 : data(std::move(undecoded_beatmap.data)), timing_points(parse_timing_points(undecoded_beatmap.timing_points)), hit_objects(parse_hit_objects(undecoded_beatmap.hit_objects)) {}
 
-BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution, ma_engine& audio_engine) : audio_engine(audio_engine), circle_shader(ASSETS_PATH"/shaders/circle.glsl"), approach_circle_shader(ASSETS_PATH"/shaders/approach_circle.glsl") {
+BeatmapPlayer::BeatmapPlayer(glm::vec2 screen_resolution, ma_engine& audio_engine) : playing(false), audio_engine(audio_engine), circle_shader(ASSETS_PATH"/shaders/circle.glsl"), approach_circle_shader(ASSETS_PATH"/shaders/approach_circle.glsl") {
     last_circle_vector_capacity = 0;
     visible_circles_index_start = 0;
     visible_circles_index_end   = 0;
@@ -195,6 +195,7 @@ std::optional<std::string> BeatmapPlayer::load_beatmap(const Beatmap& beatmap) {
 }
 
 int BeatmapPlayer::start() {
+    playing = true;
     visible_circles_index_start = 0;
     visible_circles_index_end   = 0;
     time = 0.0;
@@ -209,7 +210,19 @@ int BeatmapPlayer::start() {
     return 0;
 }
 
+void BeatmapPlayer::stop() {
+    ma_sound_stop(&music);
+    ma_sound_uninit(&music);
+
+    playing = false;
+}
+
 void BeatmapPlayer::update(double delta) {
+    if (ma_sound_at_end(&music)) {
+        stop();
+        return;
+    }
+
     time += delta * 1000.0 * 1.0;
 
     calculate_visible_circles();
@@ -229,6 +242,6 @@ void BeatmapPlayer::draw() {
     }
 }
 
-void beatmap_loop() {
-    //ma_sound_uninit(&sound);
+bool BeatmapPlayer::is_playing() {
+    return playing;
 }

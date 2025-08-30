@@ -69,6 +69,8 @@ private:
     
     Difficulty beatmap_difficulty;
 
+    bool playing;
+
     float circle_diameter;
 
     double time;
@@ -93,10 +95,12 @@ public:
     std::optional<std::string> load_beatmap(const Beatmap& beatmap);
 
     void reset();
-    
     int start();
+    void stop();
     
     void update(double delta);
 
     void draw();
+
+    bool is_playing();
 };
