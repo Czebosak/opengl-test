@@ -89,14 +89,10 @@ void Playfield::calculate(glm::vec2 screen_resolution) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(position - (size / 2.0f), 0.0f));
     model = glm::scale(model, glm::vec3(osu_scale, osu_scale, 1.0f));
-    std::cout << osu_scale << " " << position.x << ", " << position.y << std::endl;
-    /* model = glm::translate(model, glm::vec3(400.0f, 400.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(40.0f, 40.0f, 1.0f)); */
 
     glm::mat4 proj = glm::ortho(0.0f, screen_resolution.x, screen_resolution.y, 0.0f);
 
     mvp = proj * model;
-    std::cout << osu_scale << std::endl;
 }
 
 void BeatmapPlayer::calculate_approach_time() {
@@ -135,8 +131,8 @@ void BeatmapPlayer::calculate_visible_circles() {
         visible_circles_index_end++;
     }
 
-    if (visible_circles_index_end != 0) {
-        size_t length = (visible_circles_index_end - visible_circles_index_start) + 1;
+    if (visible_circles_index_end > visible_circles_index_start) {
+        size_t length = (visible_circles_index_end - visible_circles_index_start);
         hit_object_positions.resize(length);
         
         for (int i = 0; i < length; i++) {
@@ -146,12 +142,13 @@ void BeatmapPlayer::calculate_visible_circles() {
         }
     }
 
+    circle_positions_buffer.bind();
+
     if (last_circle_vector_capacity != hit_object_positions.capacity()) {
-        circle_positions_buffer.resize(last_circle_vector_capacity, hit_object_positions.capacity());
+        circle_positions_buffer.resize(hit_object_positions.capacity() * sizeof(glm::ivec2));
         last_circle_vector_capacity = hit_object_positions.capacity();
     }
 
-    circle_positions_buffer.bind();
     circle_positions_buffer.set_data(hit_object_positions.data(), hit_object_positions.size() * sizeof(glm::ivec2));
 }
 
@@ -162,20 +159,13 @@ std::optional<std::string> BeatmapPlayer::load_beatmap(const Beatmap& beatmap) {
     if (auto err = fill_beatmap_difficulty()) return err;
 
     calculate_approach_time();
-
     calculate_circle_diameter();
-
-    /* hit_object_positions.reserve(beatmap.hit_objects.size());
-    for (int i = 0; i < beatmap.hit_objects.size(); i++) {
-        hit_object_positions[i].x = beatmap.hit_objects[i].x;
-        hit_object_positions[i].y = beatmap.hit_objects[i].y;
-    } */
 
     return std::nullopt;
 }
 
 void BeatmapPlayer::update(double delta) {
-    time += delta * 1000;
+    time += delta * 1000.0 * 4.0;
 
     calculate_visible_circles();
 }
@@ -185,13 +175,8 @@ void BeatmapPlayer::draw() {
         circle_vertex_array.bind();
         circle_index_buffer.bind();
         circle_shader.bind();
-        //gl_call(glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, 2));
-        //std::cout << hit_object_positions.size() << std::endl;
         gl_call(glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, hit_object_positions.size()));
-        //gl_call(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
     }
-
-    //last_circle_vector_capacity = hit_object_positions.capacity();
 }
 
 void beatmap_loop() {}

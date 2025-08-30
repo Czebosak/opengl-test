@@ -15,7 +15,7 @@ public:
     void unbind() const;
 
     void set_data(const void* data, size_t size);
-    void resize(size_t old_size, size_t new_size);
+    void resize(size_t new_size);
     
 
     VertexBuffer(const VertexBuffer&) = delete;
